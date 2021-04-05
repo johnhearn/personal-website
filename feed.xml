@@ -1,31 +1,977 @@
----
-layout: null
-nav_exclude: true
----
 <?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>{{ site.title | xml_escape }}</title>
-    <description>{{ site.description | xml_escape }}</description>
-    <link>{{ site.url }}{{ site.baseurl }}/</link>
-    <atom:link href="{{ "/feed.xml" | prepend: site.baseurl | prepend: site.url }}" rel="self" type="application/rss+xml"/>
-    <pubDate>{{ site.time | date_to_rfc822 }}</pubDate>
-    <lastBuildDate>{{ site.time | date_to_rfc822 }}</lastBuildDate>
-    <generator>Jekyll v{{ jekyll.version }}</generator>
-    {% for post in site.posts limit:10 %}
+    <title>john-hearn.info</title>
+    <description>Personal site for blogging and about science, software and such</description>
+    <link>https://john-hearn.info//</link>
+    <atom:link href="https://john-hearn.info//feed.xml" rel="self" type="application/rss+xml"/>
+    <pubDate>Mon, 05 Apr 2021 18:08:03 +0200</pubDate>
+    <lastBuildDate>Mon, 05 Apr 2021 18:08:03 +0200</lastBuildDate>
+    <generator>Jekyll v4.2.0</generator>
+    
       <item>
-        <title>{{ post.title | xml_escape }}</title>
-        <description>{{ post.content | xml_escape }}</description>
-        <pubDate>{{ post.date | date_to_rfc822 }}</pubDate>
-        <link>{{ post.url | prepend: site.baseurl | prepend: site.url }}</link>
-        <guid isPermaLink="true">{{ post.url | prepend: site.baseurl | prepend: site.url }}</guid>
-        {% for tag in post.tags %}
-        <category>{{ tag | xml_escape }}</category>
-        {% endfor %}
-        {% for cat in post.categories %}
-        <category>{{ cat | xml_escape }}</category>
-        {% endfor %}
+        <title>Load Balancing Strategies and their Distributions</title>
+        <description>&lt;p&gt;Results of a simulation to compare four of the most well known load balancer strategies:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;&lt;strong&gt;Round robin&lt;/strong&gt; - requests are routed to each of the available servers in turn&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Least occupied&lt;/strong&gt; - requests are routed to the server with least current requests&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Random&lt;/strong&gt; - requests are routed to a randomly selected server&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Random 2&lt;/strong&gt; - requests are routed to one of two randomly selected servers, where the chosen server has least current requests (see &lt;a href=&quot;https://www.haproxy.com/blog/power-of-two-load-balancing/&quot;&gt;here&lt;/a&gt; and &lt;a href=&quot;https://www.nginx.com/blog/nginx-power-of-two-choices-load-balancing-algorithm&quot;&gt;here&lt;/a&gt;)&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&quot;the-experiment&quot;&gt;The experiment&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;Arrival rate&lt;/strong&gt;: requests arrive with a Poisson process with mean $\lambda$.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Service rate&lt;/strong&gt;: request completions are distributed with a Log-Normal distribution (although any realistic distribution shows the same characteristics).&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Load factor&lt;/strong&gt; is the ratio of arrival rate to completion rate, ranging strictly from 0.0 to 1.0. If greater than 1 then the requests would accumulate without end.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;We keep a record of the number of requests in the system for a single server. The &lt;a href=&quot;https://nbviewer.jupyter.org/github/johnhearn/notebooks/blob/0209bfb5a128fd332250cf341b97064281ea4feb/Smadex/Load%20Balancing%20Stats.ipynb&quot;&gt;Julia code&lt;/a&gt; is here.&lt;/p&gt;
+
+&lt;h2 id=&quot;the-results&quot;&gt;The results&lt;/h2&gt;
+
+&lt;p&gt;The difference in the distributions of the concurrent requests in with the different strategies is clear.&lt;/p&gt;
+
+&lt;figure&gt;&lt;figcaption&gt;&lt;span&gt;Distribution of concurrent requests under different load balancing strategies. The requests are distributed over 20 servers with average arrival rate of 10 per step at 75% load factor.&lt;/span&gt;&lt;/figcaption&gt;&lt;img src=&quot;/assets/images/load-balancing/hist-20-75.png&quot; /&gt;&lt;/figure&gt;
+
+&lt;p&gt;Notice how remnants of the input and output distributions are still visible in the &lt;em&gt;round robin&lt;/em&gt; strategy. The &lt;em&gt;least occupied&lt;/em&gt; and &lt;em&gt;random 2&lt;/em&gt; strategies tend to concentrate the distribution around its average. On the other hand the &lt;em&gt;random&lt;/em&gt; strategy seems to spread the distribution still further.&lt;/p&gt;
+
+&lt;p&gt;How does the average vary with load factor?&lt;/p&gt;
+
+&lt;figure&gt;&lt;figcaption&gt;&lt;span&gt;Change in average concurrent requests as load factory varies, keeping number of servers at 20.&lt;/span&gt;&lt;/figcaption&gt;&lt;img src=&quot;/assets/images/load-balancing/mean-20-p.png&quot; /&gt;&lt;/figure&gt;
+
+&lt;p&gt;All strategies perform progressively worse as load factor increases, as would be expected. However the &lt;em&gt;least occupied&lt;/em&gt; and &lt;em&gt;random 2&lt;/em&gt; strategies are noticeably better that the others, even at higher load factors.&lt;/p&gt;
+
+&lt;p&gt;And how does it change with number of servers?&lt;/p&gt;
+
+&lt;figure&gt;&lt;figcaption&gt;&lt;span&gt;Change in average concurrent requests as number of servers varies, keeping load factor constant at 80%.&lt;/span&gt;&lt;/figcaption&gt;&lt;img src=&quot;/assets/images/load-balancing/mean-c-80.png&quot; /&gt;&lt;/figure&gt;
+
+&lt;p&gt;Clearly the best strategies require a minimum number of servers over which to spread the requests. That number is relatively small (in this example around 10) and very little improvement is observed with additional servers. The others are unaffected by number of servers.&lt;/p&gt;
+
+&lt;h2 id=&quot;variance&quot;&gt;Variance&lt;/h2&gt;
+
+&lt;p&gt;The spread in concurrent requests will translate to a spread in latencies too. For a distributed systems we are usually interested in maintaining predictable latencies and minimising long-tails, so we want to minimise this spread. It’s visibly clear that &lt;em&gt;least occupied&lt;/em&gt; is the best in this case as it has the narrowest distribution. Let’s have a look at the variance for each one, taking &lt;em&gt;round robin&lt;/em&gt; as the base.&lt;/p&gt;
+
+&lt;figure&gt;&lt;figcaption&gt;&lt;span&gt;Comparison of variance of the distribution of concurrent requests under different load balancing strategies, keeping the number of servers at 20.&lt;/span&gt;&lt;/figcaption&gt;&lt;img src=&quot;/assets/images/load-balancing/variance-20-p.png&quot; /&gt;&lt;/figure&gt;
+
+&lt;p&gt;What is the relationship between number of servers and the variance?&lt;/p&gt;
+
+&lt;figure&gt;&lt;figcaption&gt;&lt;span&gt;Change in variance under different load balancing strategies as number of servers increases.&lt;/span&gt;&lt;/figcaption&gt;&lt;img src=&quot;/assets/images/load-balancing/variance-c-80.png&quot; /&gt;&lt;/figure&gt;
+
+&lt;p&gt;We can see that when there is only a single server, all strategies are the same (obviously). Both the &lt;em&gt;round robin&lt;/em&gt; and &lt;em&gt;random&lt;/em&gt; strategies have little or no effect on the variance, no matter how many servers there are in the cluster. Although bot &lt;em&gt;least occupied&lt;/em&gt; and &lt;em&gt;random 2&lt;/em&gt; fare better, the &lt;em&gt;least occupied&lt;/em&gt; has a clear advantage here and seems to be able to capitalise on additional servers more effectively.&lt;/p&gt;
+
+&lt;h2 id=&quot;shedding&quot;&gt;Shedding&lt;/h2&gt;
+
+&lt;p&gt;We employ a shedding mechanism to help keep request distributions under control independently of the load balancing strategy. How does this affect the results? Here we apply a simple shedding of requests by disallowing more than 20 concurrent requests per server.&lt;/p&gt;
+
+&lt;figure&gt;&lt;figcaption&gt;&lt;span&gt;Distribution of concurrent requests under different load balancing strategies, shedding requests above 20 per server.&lt;/span&gt;&lt;/figcaption&gt;&lt;img src=&quot;/assets/images/load-balancing/hist-20-75-shedding20.png&quot; /&gt;&lt;/figure&gt;
+
+&lt;p&gt;The mean of the worse strategies has actually gone down, however much more shedding is being done. That means that server throughput (serviced requests) should be lower. On the other hand the average latencies will also be higher due to the higher load on the server.&lt;/p&gt;
+
+&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
+
+&lt;p&gt;&lt;label for=&quot;entropy&quot; class=&quot;margin-toggle&quot;&gt;⊕&lt;/label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;entropy&quot; class=&quot;margin-toggle&quot; /&gt;&lt;span class=&quot;marginnote&quot;&gt;&lt;img class=&quot;fullwidth&quot; src=&quot;/assets/images/load-balancing/entropy-c-80.png&quot; /&gt;&lt;br /&gt;As an aside, we can also calculate the entropy of the distribution and see (as shown in the graph above) that it has also has &lt;strong&gt;decreased&lt;/strong&gt; for the &lt;em&gt;least occupied&lt;/em&gt; and &lt;em&gt;random 2&lt;/em&gt; strategies while it has actually &lt;strong&gt;increased&lt;/strong&gt; for the random one. One interpretation of these results is that the &lt;em&gt;random&lt;/em&gt; strategy introduces a little bit of new uncertainty into the system. On the other hand &lt;em&gt;least occupied&lt;/em&gt; and &lt;em&gt;random 2&lt;/em&gt; actually remove uncertainty. This is the load balancer equivalent of &lt;a href=&quot;https://en.wikipedia.org/wiki/Maxwell's_demon&quot;&gt;Maxwell’s demon&lt;/a&gt;, applying work to each request in order to reduce its uncertainty.&lt;/span&gt;&lt;/p&gt;
+
+&lt;p&gt;Of all the strategies &lt;em&gt;round robin&lt;/em&gt; and &lt;em&gt;random&lt;/em&gt; are disastrous and either do nothing to improve the distribution of requests or actually make it worse. However, the &lt;em&gt;least occupied&lt;/em&gt; and &lt;em&gt;random 2&lt;/em&gt; strategies are able to take advantage of multiple servers to not only reduce the mean but also reduce the variance across the cluster.&lt;/p&gt;
+
+&lt;p&gt;While the &lt;em&gt;least occupied&lt;/em&gt; is slightly better in terms of the spread of requests, the &lt;em&gt;random 2&lt;/em&gt; has some other advantages. Firstly, it’s slightly simpler and therefore faster in practice because only 2 servers are checked for each request rather than all of them. More importantly, it avoids servers which are (re)starting receiving all the load immediately. This is useful when the server needs some time to warmup caches, etc.&lt;/p&gt;
+</description>
+        <pubDate>Sat, 03 Apr 2021 17:27:00 +0200</pubDate>
+        <link>https://john-hearn.info//articles/load-balancing-strategies</link>
+        <guid isPermaLink="true">https://john-hearn.info//articles/load-balancing-strategies</guid>
+        
+        
       </item>
-    {% endfor %}
+    
+      <item>
+        <title>A Plot Recipe for Yao.jl</title>
+        <description>&lt;p&gt;It’s sometimes useful to see a distribution plot for multiple results obtained from a quantum circuit. Take for example the random number generator from a &lt;a href=&quot;quantum-random-numbers-in-yao-jl&quot;&gt;previous post&lt;/a&gt; where we used such a plot to check the results were uniformly distributed. Julia has great support for plotting. With the &lt;a href=&quot;https://docs.juliaplots.org/latest/&quot;&gt;Plots.jl&lt;/a&gt; package it’s extremely easy to get a distribution histogram but getting the axes tidy is a bit fiddly. Fortunately Plots.jl provides a very conveniente extension mechanism which we can use.&lt;/p&gt;
+
+&lt;p&gt;As a reminder, here we generate an array of random 3-bit numbers using the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nshots&lt;/code&gt; parameter to specify how many, in this case 1000.&lt;/p&gt;
+
+&lt;div class=&quot;language-julia highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;using&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Yao&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;numbers&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;zero_state&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;|&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;repeat&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;H&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;|&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;measure&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;r&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;nshots&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;10000&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;div class=&quot;language-console highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;go&quot;&gt;1000-element Array{BitBasis.BitStr{3,Int64},1}:
+ 100 ₍₂₎
+       ⋮
+ 110 ₍₂₎
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;To see the histogram of results we could do something like this:&lt;/p&gt;
+
+&lt;div class=&quot;language-julia highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;histogram&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;numbers&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;.|&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bint&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;legend&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;none&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;xticks&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;7&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;This is OK but it has a few things I don’t like, for one the ticks don’t really line up properly with the bars. Also the ticks have to be manually set. Also the bins often have to be tweaked manually as well. These things are easy to fix and put inside a Plots.jl recipe for easy reuse.&lt;/p&gt;
+
+&lt;p&gt;Looking back at the results, Yao.jl gives us an array of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;BitStr&lt;/code&gt; results and the full type &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Array{BitBasis.BitStr{3,Int64},1}&lt;/code&gt; is parametrised by the number of bits. That turns out to be quite useful. Defining the recipe function like this:&lt;/p&gt;
+
+&lt;div class=&quot;language-julia highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nd&quot;&gt;@recipe&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt; user_recipe&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;measurements&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Array&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;BitStr&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;})&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;where&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;We now have access to the number of bits in $n$. The maximum possible value is then &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;max = (1&amp;lt;&amp;lt;n)-1&lt;/code&gt;. Then we can calculate the histogram using standard Julia tools:&lt;/p&gt;
+
+&lt;div class=&quot;language-julia highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;hist&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;fit&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Histogram&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;measurements&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;max&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;hist&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;normalize&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;hist&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;mode&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pdf&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Notice that this is where the conversion to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Int&lt;/code&gt; happens and we one again use the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;max&lt;/code&gt; value that came via the type parametrisation. Next the plot attributes, basically the same as the histogram used above:&lt;/p&gt;
+
+&lt;div class=&quot;language-julia highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;seriestype&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;bar&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;bins&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;max&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;xticks&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;--&amp;gt;&lt;/span&gt; &lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;max&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;legend&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;--&amp;gt;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;none&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Again using the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;max&lt;/code&gt; value. Then we can return the histogram results, centering on the tick marks:&lt;/p&gt;
+
+&lt;div class=&quot;language-julia highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;hist&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;edges&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;.-&lt;/span&gt; &lt;span class=&quot;mf&quot;&gt;0.5&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;hist&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;weights&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Y voila. Julia will automatically dispatch to our recipe based on the type of the results:&lt;/p&gt;
+
+&lt;div class=&quot;language-julia highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;plot&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;results&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/quantum-computing/random-dist-8.png&quot; alt=&quot;Distribution of random numbers produced by the recipe&quot; width=&quot;60%&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;To check with a different distriibution let’s try imitating a random 6-sided die by preselection of the unwanted values 6 and 7.&lt;/p&gt;
+
+&lt;div class=&quot;language-julia highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;YaoBlocks&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ConstGate&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;P0&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;die&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;chain&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; 
+    &lt;span class=&quot;n&quot;&gt;repeat&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;H&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;),&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;control&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;X&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;),&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;put&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;P0&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;))&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;results&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;zero_state&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;|&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;block&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;|&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;focus!&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;r&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;|&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;measure&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;r&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;nshots&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;10000&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;plot&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;results&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/quantum-computing/random-dist-6.png&quot; alt=&quot;Distribution of preselected random numbers produced by the recipe&quot; width=&quot;60%&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Distribution shows values 6 and 7 have 0% probability, as we expected.&lt;/p&gt;
+
+&lt;p&gt;Working code available &lt;a href=&quot;https://nbviewer.jupyter.org/github/johnhearn/notebooks/blob/master/QuantumComputing/A Plot Recipe for Yao.jl.ipynb&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+</description>
+        <pubDate>Sun, 26 Jul 2020 15:30:00 +0200</pubDate>
+        <link>https://john-hearn.info//articles/plot-recipe-for-yao-jl</link>
+        <guid isPermaLink="true">https://john-hearn.info//articles/plot-recipe-for-yao-jl</guid>
+        
+        <category>quantum computing</category>
+        
+        <category>julia</category>
+        
+        <category>yao</category>
+        
+        
+      </item>
+    
+      <item>
+        <title>Grover's Algorithm in Yao.jl</title>
+        <description>&lt;p&gt;Continuing the series of posts building the basic quantum algorithms with &lt;a href=&quot;https://github.com/QuantumBFS&quot;&gt;Yao.jl&lt;/a&gt; we come to Grover’s algorithm. There is a &lt;a href=&quot;https://tutorials.yaoquantum.org/dev/generated/quick-start/3.grover-search/&quot;&gt;tutorial on Grover&lt;/a&gt; in the Yao.jl documentation &lt;label for=&quot;qiskit&quot; class=&quot;margin-toggle&quot;&gt; ⊕&lt;/label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;qiskit&quot; class=&quot;margin-toggle&quot; /&gt;&lt;span class=&quot;marginnote&quot;&gt;QisKit also has a &lt;a href=&quot;https://qiskit.org/textbook/ch-algorithms/grover.html&quot;&gt;nice explication&lt;/a&gt;. It’s worth getting multiple perspectives on these things. &lt;/span&gt; but I found it a little hard to follow the code so I simplified it right down to the basics.&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;grovers-search-algorithm&quot;&gt;Remember&lt;/a&gt; that we have a binary function, $f$, which is always equal $0$ except for a single value $u$, when it is equal to $1$. The challenge is to find $u$ with as few queries to $f$ as possible. As always, and with all the usual caveats, we take for granted that we have access to an oracle, $U_f$, that provides a suitable quantum transformation based on $f$.&lt;/p&gt;
+
+&lt;p&gt;The oracle consists of a transformation which reflects the target value, $u$, and only this value, around the x-axis. All other values are left untouched.&lt;/p&gt;
+
+&lt;div class=&quot;language-julia highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt; oracle&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;u&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;where&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Unsigned&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;n&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ceil&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;log&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;u&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;c&quot;&gt;# Use only as many bits as necessary&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;v&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ones&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;ComplexF64&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;v&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;u&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;c&quot;&gt;# Flip the value we're looking for&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;Diagonal&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;v&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;We work out the smallest number of bits needed from the value itself. In the Yao.jl tutorial this is all on one line and quite cryptic, hopefully this version is easier to read.&lt;/p&gt;
+
+&lt;p&gt;In the tutorial they use the phased version of the diffusion operator&lt;label for=&quot;yaodraw&quot; class=&quot;margin-toggle&quot;&gt; ⊕&lt;/label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;yaodraw&quot; class=&quot;margin-toggle&quot; /&gt;&lt;span class=&quot;marginnote&quot;&gt;This diagram is generated directly from the code with YaoDraw :) &lt;/span&gt;:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/quantum-computing/grovers-circuit-phase.png&quot; alt=&quot;grovers-circuit&quot; width=&quot;400px&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Notice that with this construction we don’t have to use an ancillary bit. As can be seen in the diagram we also have some reusable blocks, namely the $H^{\otimes n}$, which for some reason the tutorial calls &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;gen&lt;/code&gt;, and the repeating section which is a combination of the oracle itself followed by the diffusion operator. They are chained together like this:&lt;/p&gt;
+
+&lt;div class=&quot;language-julia highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    &lt;span class=&quot;n&quot;&gt;gen&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;repeat&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;H&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;reflect0&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;control&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;collect&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&amp;gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Z&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;c&quot;&gt;# I-2|0&amp;gt;&amp;lt;0|&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;repeating_circuit&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;chain&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Uf&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;gen&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;reflect0&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;gen&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Inside the repeating section there is also the reflection circuit, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;reflect0&lt;/code&gt; which is responsible for flipping the distribution about the average value which is what has the effect of amplifying values made negative by the oracle. To check that it is indeed the correct circuit it can be compared to the other form \(I_n - 2\vert 0^n \rangle \langle 0^n \vert\).&lt;/p&gt;
+
+&lt;div class=&quot;language-julia highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;ZERO&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;foldl&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;kron&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;fill&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;([&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;))&lt;/span&gt;
+&lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;real&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sparse&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;I&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;16&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;16&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ZERO&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ZERO&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;It is indeed the same, although I’m still sure of the origin of the conditional &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Z&lt;/code&gt; transform version, it’s an identity to bear in mind.&lt;/p&gt;
+
+&lt;p&gt;Continuing with the algorithm, the repeating section is simply placed in a for loop applied to a prepared quantum register:&lt;/p&gt;
+
+&lt;div class=&quot;language-julia highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    &lt;span class=&quot;n&quot;&gt;reg&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;zero_state&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;|&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;gen&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;iter&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;reg&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;|&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;repeating_circuit&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The variable &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;iter&lt;/code&gt; is the number of iterations we want to apply. Getting the right value for this is tricky&lt;label for=&quot;iter&quot; class=&quot;margin-toggle&quot;&gt; ⊕&lt;/label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;iter&quot; class=&quot;margin-toggle&quot; /&gt;&lt;span class=&quot;marginnote&quot;&gt;The tutorial has much more sophisticated way of doing this. &lt;/span&gt; so we just use a hand picked value for now. It should be less than $\sqrt{2^n}$. For clarity we wrap the whole circuit in a function and pass in the oracle:&lt;/p&gt;
+
+&lt;div class=&quot;language-julia highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt; grovers&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Uf&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AbstractBlock&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;},&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;iter&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;where&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;grovers&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;matblock&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;oracle&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mb&quot;&gt;0b11110011&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)),&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;10&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;|&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;measure!&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;And that’s it, not too bad actually. Working code is &lt;a href=&quot;https://nbviewer.jupyter.org/github/johnhearn/notebooks/blob/master/QuantumComputing/Grover%27s%20Algorithm%20in%20Yao.jl.ipynb&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Looking forward to applying to more &lt;a href=&quot;https://www.youtube.com/watch?v=afuoGbptET8&quot;&gt;interesting problems&lt;/a&gt; to it.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;PS: Just for fun this is how the histogram of probabilities evolves between each iteration. It’s clear how the chosen value emerges in just a few steps.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/quantum-computing/grovers-search-anim.gif&quot; alt=&quot;grovers-search&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;If you’re interested, this is the code to generate the histogram. Run with 6 bits over 6 iterations and 1000 shots at each iteration to get the probability.&lt;/p&gt;
+
+&lt;div class=&quot;language-julia highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;using&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Plots&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;anim&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nd&quot;&gt;@animate&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;iter&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;numbers&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;reg&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;|&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;measure&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;r&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;nshots&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1000&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;.|&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bint&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;histogram&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;numbers&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;normed&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;legend&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;none&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;xlims&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;63&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ylims&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;nbins&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;64&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;reg&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;|&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;repeating_circuit&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;gif&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;anim&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;grovers-search.gif&quot;&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;fps&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+</description>
+        <pubDate>Sat, 25 Jul 2020 14:26:00 +0200</pubDate>
+        <link>https://john-hearn.info//articles/grovers-with-yao-jl</link>
+        <guid isPermaLink="true">https://john-hearn.info//articles/grovers-with-yao-jl</guid>
+        
+        <category>quantum computing</category>
+        
+        <category>julia</category>
+        
+        <category>yao</category>
+        
+        
+      </item>
+    
+      <item>
+        <title>The Deutsch-Jozsa Algorithm in Yao.jl</title>
+        <description>&lt;p&gt;(Post adapted from a &lt;a href=&quot;deutsch-jozsa-algorithm&quot;&gt;similar one&lt;/a&gt; using &lt;a href=&quot;https://yaoquantum.org/&quot;&gt;Yao.jl&lt;/a&gt; instead of &lt;a href=&quot;https://github.com/johnhearn/quko&quot;&gt;Quko&lt;/a&gt;. &lt;a href=&quot;https://qiskit.org/textbook/ch-algorithms/deutsch-josza.html&quot;&gt;Here&lt;/a&gt; is another one using &lt;a href=&quot;https://qiskit.org/&quot;&gt;QisKit&lt;/a&gt;)&lt;/p&gt;
+
+&lt;p&gt;This post describes one of the first quantum algorithms to be discovered that gave a theoretically significant improvement over the classical equivalent. Having said that it’s not useful at all, its main value was that it served as inspiration for other more practical algorithms such as Grover’s search and Shor’s factoring.&lt;/p&gt;
+
+&lt;h2 id=&quot;simplest-case&quot;&gt;Simplest case&lt;/h2&gt;
+
+&lt;p&gt;The simplest statement of the problem is to determine if a boolean function, \(f\), always results in the same &lt;em&gt;constant&lt;/em&gt; value or if it is &lt;em&gt;balanced&lt;/em&gt; and returns both true and false depending on the input.&lt;/p&gt;
+
+&lt;p&gt;In programming terms this means evaluating the function:&lt;/p&gt;
+
+&lt;div class=&quot;language-kotlin highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;f&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Boolean&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Boolean&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;for both possible inputs and checking the results. This amounts to applying an XOR operation to the two results:&lt;/p&gt;
+
+&lt;div class=&quot;language-julia highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;f&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;⊻&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;f&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;In the classical world this will obviously require &lt;strong&gt;two&lt;/strong&gt; evaluations of the function however in the quantum version only &lt;strong&gt;one&lt;/strong&gt; evaluation is ever required.&lt;/p&gt;
+
+&lt;p&gt;Imagine we are given a gate \(U_f\) which is based on the function we are interested in. This gate can be constructed in various ways but for now we’ll assume that it’s given.&lt;/p&gt;
+
+&lt;p&gt;Then a circuit for the algorithm can be represented by the following diagram:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/quantum-computing/deutschs-circuit.png&quot; alt=&quot;Deutsch's algorithm circuit&quot; width=&quot;320px&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;This equates in Yao.jl to the following snippet:&lt;/p&gt;
+
+&lt;div class=&quot;language-julia highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;deutsch&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Uf&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;chain&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt;
+                &lt;span class=&quot;n&quot;&gt;put&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;X&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;),&lt;/span&gt;
+                &lt;span class=&quot;n&quot;&gt;repeat&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;H&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;),&lt;/span&gt;
+                &lt;span class=&quot;n&quot;&gt;Uf&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt;
+                &lt;span class=&quot;n&quot;&gt;put&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;H&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Where $U_f$&lt;label for=&quot;like&quot; class=&quot;margin-toggle sidenote-number&quot;&gt;&lt;/label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;like&quot; class=&quot;margin-toggle&quot; /&gt;&lt;span class=&quot;sidenote&quot;&gt;One of the things I like about Julia is that it is OK to use naming more akin to the mathematics, even using unicode, than would be conventional in other language conventions. &lt;/span&gt; is the block implementing the function. If the function is &lt;em&gt;balanced&lt;/em&gt; then the measurement will always be &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;true&lt;/code&gt;, if constant then the measurement will always be &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;false&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;One way to think about how this works is that the \(U_f\) gate transforms the superposition of both possible input values. The resulting interference pattern provides us with the result.&lt;/p&gt;
+
+&lt;p&gt;As an example, if the function, $f$, evaluates to a constant value $1$. If you work through the logic then the oracle, $U_f$, simply flips the second bit. In Yao.jl the block can be created like this:&lt;/p&gt;
+
+&lt;div class=&quot;language-julia highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;Uf₁&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;put&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;X&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Where &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;put&lt;/code&gt; is a Yao.jl function to add an &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;X&lt;/code&gt; gate to the second qubit. Then, evaluating the circuit:&lt;/p&gt;
+
+&lt;div class=&quot;language-julia highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;zero_state&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;|&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;deutsch&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Uf₁&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;|&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;focus!&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;|&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;measure!&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Always results in a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;0&lt;/code&gt; to indicate a &lt;em&gt;constant&lt;/em&gt; function. On the other hand if we try a balanced function which can be represented by the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;CNOT&lt;/code&gt; gate.&lt;/p&gt;
+
+&lt;div class=&quot;language-julia highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;Uf₂&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;control&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;X&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;In this case evaluating the circuit as before results ins a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;1&lt;/code&gt; indicating that it is balanced.&lt;/p&gt;
+
+&lt;h2 id=&quot;extending-to-multiple-bits&quot;&gt;Extending to multiple bits&lt;/h2&gt;
+
+&lt;p&gt;Other researchers extended to algorithm to multiple bits which corresponds to the function taking an integer argument. The result bust either be &lt;em&gt;constant&lt;/em&gt;, as before, or &lt;em&gt;balanced&lt;/em&gt;, meaning that the function returns either 1 or 0 half of the time (other possible functions are not contemplated).&lt;/p&gt;
+
+&lt;p&gt;The function becomes:&lt;/p&gt;
+
+&lt;div class=&quot;language-kotlin highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;f&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Int&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;and will, on average, need many more evaluations of the function to test be able to determine if it is &lt;em&gt;constant&lt;/em&gt; or not.&lt;/p&gt;
+
+&lt;p&gt;The quantum circuit in this case would be:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/quantum-computing/deutsch-jozsa-circuit.png&quot; alt=&quot;Deutsch-Jozsa algorithm circuit&quot; width=&quot;400px&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;One way to build this circuit in Yao.jl is as follows:&lt;/p&gt;
+
+&lt;div class=&quot;language-julia highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;deutsch_jozsa&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;m&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Uf&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;chain&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;m&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt;
+                        &lt;span class=&quot;n&quot;&gt;put&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;m&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;X&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;),&lt;/span&gt;
+                        &lt;span class=&quot;n&quot;&gt;repeat&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;m&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;H&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;),&lt;/span&gt;
+                        &lt;span class=&quot;n&quot;&gt;Uf&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt;
+                        &lt;span class=&quot;n&quot;&gt;repeat&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;H&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;m&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;In this case $m$ is the number of bits in the integer part of the circuit. This will give us a boolean result for the given function, assuming the function works on \(m\) bit integers. To build the oracle, $U_f$, we’ll use some bit fiddling to create a permutation:&lt;/p&gt;
+
+&lt;div class=&quot;language-julia highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;perm&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;x&quot;&gt;[(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;y&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;⊻&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;f&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;))&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;m&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;y&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;^&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;m&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;]&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The double comprehension syntax is very convenient here. Compare the calculation &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;y ⊻ f(x)&lt;/code&gt; (where ⊻ means XOR) with the &lt;a href=&quot;https://en.wikipedia.org/wiki/Deutsch%E2%80%93Jozsa_algorithm#Algorithm&quot;&gt;definition&lt;/a&gt; of the gate.&lt;/p&gt;
+
+&lt;p&gt;To convert this to a Yao.jl block we have to create a permutation matrix (complex for generality) and then convert to a matrix block &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;matblock&lt;/code&gt; for Yao.jl to understand it.&lt;/p&gt;
+
+&lt;div class=&quot;language-julia highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;permute&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sparse&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;I&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;N&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;N&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;perm&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.+&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;collect&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;N&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;|&amp;gt;&lt;/span&gt;
+     &lt;span class=&quot;kt&quot;&gt;Matrix&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Complex&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Float64&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;}}&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;|&amp;gt;&lt;/span&gt;
+     &lt;span class=&quot;n&quot;&gt;matblock&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;We can then test our circuit with a function, say $f(x)=1$ which should give us $0$ since it’s constant:&lt;/p&gt;
+
+&lt;div class=&quot;language-julia highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;f&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;c&quot;&gt;# constant&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;zero_state&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;m&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;|&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;deutsch_jozsa&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;m&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Uf&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;m&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;f&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;|&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;focus!&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;m&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;|&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;measure!&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Which indeed results in 0.&lt;/p&gt;
+
+&lt;p&gt;To see this all working take a look at &lt;a href=&quot;https://nbviewer.jupyter.org/github/johnhearn/notebooks/blob/master/QuantumComputing/The%20Deutsch-Jozsa%20Algorithm%20in%20Yao.jl.ipynb&quot;&gt;this notebook&lt;/a&gt;.&lt;/p&gt;
+</description>
+        <pubDate>Sat, 25 Jul 2020 14:26:00 +0200</pubDate>
+        <link>https://john-hearn.info//articles/deutsch-jozsa-with-yao-jl</link>
+        <guid isPermaLink="true">https://john-hearn.info//articles/deutsch-jozsa-with-yao-jl</guid>
+        
+        <category>quantum computing</category>
+        
+        <category>julia</category>
+        
+        <category>yao</category>
+        
+        
+      </item>
+    
+      <item>
+        <title>Quantum Random Numbers in Yao.jl</title>
+        <description>&lt;p&gt;The first example I use for understanding quantum computing concepts is the &lt;a href=&quot;quantum-random-number-generator&quot;&gt;Quantum Random Number Generator&lt;/a&gt;. It’s also the simplest example possible. Let’s see what it looks like &lt;a href=&quot;https://github.com/QuantumBFS&quot;&gt;Yao.jl&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;As you might expect, it’s beyond trivial.&lt;/p&gt;
+
+&lt;div class=&quot;language-julia highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;using&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Yao&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;BitBasis&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;zero_state&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;|&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;repeat&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;H&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;|&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;measure!&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;|&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bint&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Here &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Yao&lt;/code&gt; is the base package. &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;BitBasis&lt;/code&gt; contains the tools for dealing with bit strings which Yao returns.&lt;/p&gt;
+
+&lt;p&gt;We pass a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;zero_state&lt;/code&gt; with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n&lt;/code&gt; qubits, i.e. $\vert 0^n \rangle$, through &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n&lt;/code&gt; hadamard gates and then measure the result. Each bit has a 50/50 chance of being 0 or 1. In this case we use the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bint&lt;/code&gt; function from the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;BitBasis&lt;/code&gt; package to convert the measured bits to a number.&lt;/p&gt;
+
+&lt;p&gt;The result is indeed a random number between 0 and 7.&lt;/p&gt;
+
+&lt;p&gt;Let’s go a little further and make sure the numbers are uniform by plotting the distribution of the results:&lt;/p&gt;
+
+&lt;div class=&quot;language-julia highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;results&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;zero_state&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;|&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;repeat&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;n&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;H&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;|&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;measure&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;r&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;nshots&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;10_000&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;.|&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bint&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The only difference here is the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;nshots&lt;/code&gt; parameter passed to the measure function to repeat the measurement that many times. This is much faster and cleaner than using a comprehension of something. the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;.|&amp;gt;&lt;/code&gt; operator converts the individual results.&lt;/p&gt;
+
+&lt;p&gt;The result is an array of 10,000 measurements which should be uniformly distributed. Let’s check:&lt;/p&gt;
+
+&lt;div class=&quot;language-julia highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;histogram&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;results&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;legend&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;none&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;xticks&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;maximum&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;results&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bar_width&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mf&quot;&gt;0.9&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Gives us&lt;/p&gt;
+
+&lt;figure width=&quot;200px&quot;&gt;&lt;figcaption&gt;&lt;span&gt;Uniformly distributed random numbers.&lt;/span&gt;&lt;/figcaption&gt;&lt;img src=&quot;/assets/images/quantum-computing/uniform-distribution.png&quot; /&gt;&lt;/figure&gt;
+
+&lt;p&gt;Which is good.&lt;/p&gt;
+
+</description>
+        <pubDate>Thu, 23 Jul 2020 21:42:00 +0200</pubDate>
+        <link>https://john-hearn.info//articles/quantum-random-numbers-in-yao-jl</link>
+        <guid isPermaLink="true">https://john-hearn.info//articles/quantum-random-numbers-in-yao-jl</guid>
+        
+        <category>quantum computing</category>
+        
+        <category>julia</category>
+        
+        <category>yao</category>
+        
+        
+      </item>
+    
+      <item>
+        <title>Polynomial Chaos</title>
+        <description>&lt;p&gt;
+&lt;iframe style=&quot;width: 273px;height: 154px;&quot; class=&quot;marginnote&quot; src=&quot;https://www.youtube.com/embed/Z-Qio-n6yPc&quot; frameborder=&quot;0&quot; allow=&quot;accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture&quot; allowfullscreen=&quot;&quot;&gt;&lt;/iframe&gt;
+&lt;/p&gt;
+&lt;p&gt;&lt;label for=&quot;talk&quot; class=&quot;margin-toggle&quot;&gt; ⊕&lt;/label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;talk&quot; class=&quot;margin-toggle&quot; /&gt;&lt;span class=&quot;marginnote&quot;&gt;&lt;strong&gt;Emily Gorcenski - Polynomial Chaos: A technique for modeling uncertainty&lt;/strong&gt; - &lt;em&gt;Polynomial chaos is a somewhat obscure technique that leverages a natural connection between probability distributions and orthogonal polynomial families. This talk demonstrates the technique and its applications&lt;/em&gt;. &lt;/span&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;(The Julia code for this blog is available in my GitHub notebooks repo and online &lt;a href=&quot;https://nbviewer.jupyter.org/github/johnhearn/notebooks/blob/master/Poly%20Chaos%20Approximation.ipynb&quot; target=&quot;_blank&quot;&gt;here&lt;/a&gt;.)&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;This talk appeared recently in my YouTube recommendations and with a title like “Polynomial Chaos” I had to take a look. This is a summary of what I learnt mainly to help my own understanding.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Polynomial Chaos Expansion&lt;/strong&gt; (aka PCE, also known as Wiener Chaos Expansion.) was a technique introduced just before the second world war by Norbert Wiener. The use of the word chaos is different from the way we understand it today and seems to come from its application to the statistical study of white noise.&lt;/p&gt;
+
+&lt;p&gt;In a very similar way to how the &lt;a href=&quot;https://en.wikipedia.org/wiki/Fourier_series#Hilbert_space_interpretation&quot;&gt;Fourier&lt;/a&gt; and &lt;a href=&quot;https://en.wikipedia.org/wiki/Laplace_transform&quot;&gt;Laplace&lt;/a&gt; transforms are related to the exponential functions, there are &lt;strong&gt;strong relationships&lt;/strong&gt; between certain &lt;strong&gt;probability distributions&lt;/strong&gt; and corresponding families&lt;label for=&quot;schema&quot; class=&quot;margin-toggle sidenote-number&quot;&gt;&lt;/label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;schema&quot; class=&quot;margin-toggle&quot; /&gt;&lt;span class=&quot;sidenote&quot;&gt;Catalogued in the &lt;a href=&quot;https://en.wikipedia.org/wiki/Askey_scheme&quot;&gt;Wiener-Askey scheme&lt;/a&gt;. &lt;/span&gt; of &lt;strong&gt;orthogonal polynomials&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;label for=&quot;hermite&quot; class=&quot;margin-toggle&quot;&gt;⊕&lt;/label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;hermite&quot; class=&quot;margin-toggle&quot; /&gt;&lt;span class=&quot;marginnote&quot;&gt;&lt;img class=&quot;fullwidth&quot; src=&quot;/assets/images/polychaos/hermite-polynomials.png&quot; /&gt;&lt;br /&gt;I’m imagining it in a similar way to how a continuous oscillation can be parameterised by only its frequency and amplitude in the Fourier case, though I’m not sure how far that analogy goes. This plot of the polynomials themselves does seem a bit sine-wavey.&lt;/span&gt;&lt;/p&gt;
+
+&lt;p&gt;Also like the Fourier and Laplace versions, the transformed version of the distribution has many useful properties which can be used for similar purposes, like &lt;strong&gt;approximation&lt;/strong&gt; and &lt;strong&gt;solving differential equations&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;In these notes, and following closely the talk mentioned above, I’ll try and describe how you might approximate a general probability distributions using this technique.&lt;/p&gt;
+
+&lt;p&gt;Polynomial chaos extends from the fact&lt;label for=&quot;theorem&quot; class=&quot;margin-toggle sidenote-number&quot;&gt;&lt;/label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;theorem&quot; class=&quot;margin-toggle&quot; /&gt;&lt;span class=&quot;sidenote&quot;&gt;The &lt;a href=&quot;https://en.wikipedia.org/wiki/Karhunen%E2%80%93Lo%C3%A8ve_theorem&quot;&gt;Kosambi–Karhunen–Loève theorem&lt;/a&gt; states that a stochastic process can be represented as an infinite linear combination of orthogonal functions, analogous to a Fourier series representation of a function on a bounded interval. &lt;/span&gt; that any stochastic variable (within reason) can be transformed into a system of orthogonal polynomials: $X = \sum_{i=0}^\infty X_i \phi_i(\zeta)$.&lt;/p&gt;
+
+&lt;p&gt;If the polynomials are chosen correctly then they can represent certain probability distributions very compactly. For example, for a normally distributed random variable the polynomials are &lt;a href=&quot;https://en.wikipedia.org/wiki/Hermite_polynomials&quot;&gt;Hermite polynomials&lt;/a&gt;, $\phi_i(\zeta) \equiv H_i(\zeta)$, and the transformed random variable can be written $X = \mu H_0(\zeta) + \sigma H_1(\zeta) = \mu + \sigma \zeta$, where $\mu$ and $\sigma$ are the mean and standard deviation respectively, which makes sense.&lt;/p&gt;
+
+&lt;p&gt;The relationship between the distribution and the polynomials can be seen most clearly in the definition of the inner product of the polynomials themselves. In this case the Hermite polynomial inner product is defined like this:&lt;/p&gt;
+
+\[\langle H_i(\zeta)\, H_j(\zeta) \rangle  = \int_{-\infty}^\infty H_i(\zeta) H_j(\zeta) \color{red}{e^{-\frac{\zeta^2}{2}}}\, d\zeta = \color{red}{\sqrt{2\pi}} i! \delta_{ij}\]
+
+&lt;p&gt;The elements in $\color{red}{red}$ being both the weighting function for the product and the distribution itself.&lt;/p&gt;
+
+&lt;p&gt;We want to approximate a general probability distribution, $F(k)$ by expanding in terms of a chosen set of polynomials belonging to another distribution, say $G(\zeta)$. To do this the trick is to transform both $F(k)$ and $G(\zeta)$ into the same, uniform distribution using an inverse transformation of both:&lt;/p&gt;
+
+\[k = F^{-1}(u) \stackrel{\small{\textrm{def}}}{=} h(u)\]
+
+\[\zeta = G^{-1}(u) \stackrel{\small{\textrm{def}}}{=} l(u)\]
+
+&lt;p&gt;Then use the Galerkin projection to compute the individual coefficients:&lt;/p&gt;
+
+\[k_i = \frac{\langle k H_i(\zeta) \rangle}{\langle H_i^2(\zeta) \rangle} = \frac{1}{\langle H_i^2 \rangle} \int_{-\infty}^\infty k H_i(\zeta) e^{-\frac{\zeta^2}{2}}\, d\zeta = \frac{1}{\langle H_i^2 \rangle}\int_0^1 h(u) H_i(l(u))\, du\]
+
+&lt;p&gt;All this is verbatim from the talk. I also planned to transcribe her code (to Julia of course) but I found a better plan.&lt;/p&gt;
+
+&lt;p&gt;Dealing with the polynomials from scratch is pretty tedious so I looked for a package that would do it for me. As it turns out there is a Julia package called &lt;a href=&quot;https://timueh.github.io/PolyChaos.jl/stable&quot;&gt;PolyChaos&lt;/a&gt; which does most of this. Looking through the documentation I didn’t see this actual use case so I did it myself.&lt;/p&gt;
+
+&lt;p&gt;Using the PolyChaos package we can easily define our Hermite polynomials. In PolyChaos they are called &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;GaussOrthPoly&lt;/code&gt;&lt;label for=&quot;physics&quot; class=&quot;margin-toggle sidenote-number&quot;&gt;&lt;/label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;physics&quot; class=&quot;margin-toggle&quot; /&gt;&lt;span class=&quot;sidenote&quot;&gt;The name Hermite is used for the variant of the Hermite polynomials used by physicists. I remember they appear as part of the study of the quantum linear harmonic oscillator which I studied in university. &lt;/span&gt;&lt;label for=&quot;harmonicosc&quot; class=&quot;margin-toggle&quot;&gt;⊕&lt;/label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;harmonicosc&quot; class=&quot;margin-toggle&quot; /&gt;&lt;span class=&quot;marginnote&quot;&gt;&lt;img class=&quot;fullwidth&quot; src=&quot;https://upload.wikimedia.org/wikipedia/commons/9/9e/HarmOsziFunktionen.png&quot; /&gt;&lt;br /&gt;They look something &lt;a href=&quot;https://en.wikipedia.org/wiki/Quantum_harmonic_oscillator&quot;&gt;like this&lt;/a&gt;.&lt;/span&gt;:&lt;/p&gt;
+
+&lt;div class=&quot;language-julia highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;using&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;PolyChaos&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;op_gauss&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;GaussOrthoPoly&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;20&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;H&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;evaluate&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;op_gauss&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;We also compute the inner (scalar) products, $\langle H_i^2(\zeta) \rangle$ for our polynomials, PolyChaos conveniently does this for us:&lt;/p&gt;
+
+&lt;div class=&quot;language-julia highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;sp&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;computeSP2&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;op_gauss&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Then we define our inverse functions for testing:&lt;/p&gt;
+
+&lt;div class=&quot;language-julia highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;using&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Distributions&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;inv_cdf&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dist&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;u&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;quantile&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dist&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;u&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;h&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;inv_cdf&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Exponential&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;())&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;l&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;inv_cdf&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Normal&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;())&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;integrand&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;u&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;h&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;u&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;H&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;l&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;u&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;In this case the distribution we want to approximate if the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Exponential&lt;/code&gt; distribution, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;h&lt;/code&gt;, and is defined as a partial function. The Gassian we will approximate it with is defined as the partial function &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;l&lt;/code&gt;. Finally de define our integrand in terms of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;h(u)&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;H&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;l(u)&lt;/code&gt;, for a particular index, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;i&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Now we perform the integration, for which PolyChaos also has us covered.&lt;/p&gt;
+
+&lt;div class=&quot;language-julia highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;int_op&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Uniform01OrthoPoly&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1000&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;addQuadrature&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;We’ll truncate the approximation to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;p&lt;/code&gt; polynomials:&lt;/p&gt;
+
+&lt;div class=&quot;language-julia highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;p&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;21&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;ki&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;x&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;integrate&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;integrand&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;int_op&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;/&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sp&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;p&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;]&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Then we can reconstitute the approximated distribution using 5000 Gaussian random variables, $\zeta_i$:&lt;/p&gt;
+
+&lt;div class=&quot;language-julia highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;ζ&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;randn&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;5000&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;Σ&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;zeros&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;5000&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;i&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;p&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;Σ&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ki&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;H&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ζ&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;histogram&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Σ&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;normed&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;x&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;figure&gt;&lt;figcaption&gt;&lt;span&gt;Exponential distribution constituted as a sum of transformed gaussian random variables.&lt;/span&gt;&lt;/figcaption&gt;&lt;img src=&quot;/assets/images/polychaos/reconstitutes-exponential-5000.png&quot; /&gt;&lt;/figure&gt;
+
+&lt;p&gt;With this same code we can now approximate any distribution using random variables drawn from a more manageable distribution of our choice. This would allow us to perform other transformations or analysis which may have been difficult in the original form. It may also be a faster alternative to sampling techniques, like Monte Carlo variants.&lt;/p&gt;
+</description>
+        <pubDate>Fri, 01 May 2020 19:00:09 +0200</pubDate>
+        <link>https://john-hearn.info//articles/polynomial-chaos</link>
+        <guid isPermaLink="true">https://john-hearn.info//articles/polynomial-chaos</guid>
+        
+        <category>maths</category>
+        
+        
+      </item>
+    
+      <item>
+        <title>Stop Using @Autowire</title>
+        <description>&lt;p&gt;The &lt;a href=&quot;https://spring.io/&quot;&gt;Spring Framework&lt;/a&gt; is one of the most widely used Java frameworks around. There is a lot of great stuff in the Spring eco-system so it’s a shame to see its flagship feature, a dependency injection container, being widely misused.&lt;/p&gt;
+
+&lt;p&gt;First some history&lt;label for=&quot;past&quot; class=&quot;margin-toggle&quot;&gt; ⊕&lt;/label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;past&quot; class=&quot;margin-toggle&quot; /&gt;&lt;span class=&quot;marginnote&quot;&gt;Cheesy quote of the day: „&lt;em&gt;You have to know the past to understand the present.&lt;/em&gt;“ —  Carl Sagan &lt;/span&gt;.&lt;/p&gt;
+
+&lt;p&gt;Spring has been around since the early-2000s and was conceived as an &lt;a href=&quot;https://www.amazon.com/Expert-One-One-Design-Development/dp/0764543857&quot;&gt;antidote&lt;/a&gt; to the messy J2EE situation at the time. Its principal (but certainly not its only) attraction was a &lt;strong&gt;strong focus on Inversion of Control&lt;/strong&gt; (IoC) and its dependency injection framework emerged amongst a plethora of competing DI containers.&lt;/p&gt;
+
+&lt;p&gt;In the beginning we had &lt;em&gt;bean descriptors&lt;/em&gt; written in XML (best forgotten) and then&lt;label for=&quot;2007&quot; class=&quot;margin-toggle sidenote-number&quot;&gt;&lt;/label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;2007&quot; class=&quot;margin-toggle&quot; /&gt;&lt;span class=&quot;sidenote&quot;&gt;In 2007, apparently. &lt;/span&gt;, when annotations became fashionable, and driven partly by competing frameworks like PicoContainer and Guice, (much of) the XML was replaced with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;@Autowire&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;The strength of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;@Autowire&lt;/code&gt; (and, equally, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;@Inject&lt;/code&gt;&lt;label for=&quot;inject&quot; class=&quot;margin-toggle sidenote-number&quot;&gt;&lt;/label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;inject&quot; class=&quot;margin-toggle&quot; /&gt;&lt;span class=&quot;sidenote&quot;&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;@Autowire&lt;/code&gt; and the standardised &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;@Inject&lt;/code&gt; annotations are essentially the same and Spring supports both. I’ll consider them as synonyms in this post. &lt;/span&gt;) is its simplicity: add the annotation and let the framework do the rest.&lt;/p&gt;
+
+&lt;p&gt;Even at that time there was a big debate about whether to use constructor or field injection, the former better by design and the latter simpler to apply, but in either case the annotation was required to be present somewhere in the class.&lt;/p&gt;
+
+&lt;p&gt;The rather unfortunate consequence of having to add Spring specific code to otherwise clean domain objects was considered a worthwhile trade-off. And since we’re using the annotation anyway why not just add it everywhere?&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;The annotation is no longer required on constructors and the trade-off is no longer worthwhile&lt;/strong&gt;. Nonetheless millions of developers are dragging it into the 2020s needlessly along with its disadvantages.&lt;/p&gt;
+
+&lt;p&gt;As an example consider this code:&lt;/p&gt;
+
+&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;MyClass&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nd&quot;&gt;@Autowire&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Foo&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;foo&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;nd&quot;&gt;@Autowire&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Bar&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bar&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+
+    &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;This can be converted to the following code without having to do any other changes. Spring will handle it just fine.&lt;/p&gt;
+
+&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;MyClass&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;final&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Foo&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;foo&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;final&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Bar&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bar&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+
+    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;MyClass&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Foo&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;foo&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Bar&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bar&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;foo&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;foo&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;bar&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bar&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Granted that there are a couple of extra lines of boilerplate code&lt;label for=&quot;lombok&quot; class=&quot;margin-toggle sidenote-number&quot;&gt;&lt;/label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;lombok&quot; class=&quot;margin-toggle&quot; /&gt;&lt;span class=&quot;sidenote&quot;&gt;If this is important to you then consider using &lt;a href=&quot;https://www.baeldung.com/spring-injection-lombok&quot;&gt;Lombok to generate the appropriate constructor automatically&lt;/a&gt;, but note that that has its own trade-offs. &lt;/span&gt; but there are &lt;a href=&quot;https://kinbiko.com/java/dependency-injection-patterns/&quot;&gt;strong arguments&lt;/a&gt; why the second option should be preferred and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;@Autowire&lt;/code&gt; &lt;strong&gt;should now be considered a code smell&lt;/strong&gt;, especially on fields or accessors. This post outlines some of them.&lt;/p&gt;
+
+&lt;p&gt;There are also stylistic reasons&lt;label for=&quot;othereasons&quot; class=&quot;margin-toggle sidenote-number&quot;&gt;&lt;/label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;othereasons&quot; class=&quot;margin-toggle&quot; /&gt;&lt;span class=&quot;sidenote&quot;&gt;From maintainability issues to the IDE warnings about unassigned fields. &lt;/span&gt; but I’ll skip them here and concentrate on pure, cold engineering. Much of the same reasoning can be applied to the use of the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;@Value&lt;/code&gt; annotation as well. The objections can be grouped into two main categories.&lt;/p&gt;
+
+&lt;p&gt;Firstly, &lt;strong&gt;it makes it impossible to use the final modifier&lt;/strong&gt;. Using the final modifier on fields is an important feature for multiple reasons:&lt;/p&gt;
+
+&lt;p&gt;Compilation fails if you have not provided all the necessary dependencies, whereas &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;@Autowire&lt;/code&gt; fails at runtime. &lt;strong&gt;Compile time guarantees are stronger and safer than runtime testing&lt;/strong&gt;, they just are. It’s easier and quicker to fix compilation errors than it is to find runtime bugs. So much magic makes configuration problems really hard to debug at runtime. &lt;em&gt;You will lose time over this&lt;/em&gt;.&lt;/p&gt;
+
+&lt;p&gt;The simple fact that a value cannot change after construction gives &lt;strong&gt;additional assurances about the behaviour of the code&lt;/strong&gt; just by looking at it. It explicitly declares intent and can help avoid some very hard to find bugs.&lt;/p&gt;
+
+&lt;p&gt;Final fields are &lt;a href=&quot;https://www.javamex.com/tutorials/synchronization_final.shtml&quot;&gt;guaranteed to be synchronised&lt;/a&gt; between threads. If you don’t declare fields final, then you must cover thread-safety by some other means, or accept that you don’t have it.&lt;/p&gt;
+
+&lt;p&gt;The JVM adds extra care-taking to non-final fields to ensure &lt;a href=&quot;https://dzone.com/articles/final-keyword-and-jvm-memory-impact&quot;&gt;correct memory ordering&lt;/a&gt; which is not needed in final fields. Additionally, &lt;a href=&quot;https://bugs.openjdk.java.net/browse/JDK-8233873&quot;&gt;there are plans&lt;/a&gt; to allow the JIT compiler to aggressively optimise code in the knowledge that a field value will not change, as &lt;a href=&quot;https://shipilev.net/jvm/anatomy-quarks/15-just-in-time-constants/&quot;&gt;currently happens with static final fields&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;That should be enough by itself but there is another major group of objections, namely that it &lt;strong&gt;hides dependencies instead of making them explicit&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;It’s so easy to add an &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;@Autowire&lt;/code&gt; annotation to a field that the structure of the object graph almost inevitably becomes messy over time and, if not careful, can even lead to hard to maintain &lt;a href=&quot;https://softwareengineering.stackexchange.com/a/12030&quot;&gt;circular dependencies&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;A long list of dependencies in a constructor is a signal that a class has too many responsibilities (violating the &lt;a href=&quot;https://en.wikipedia.org/wiki/Single-responsibility_principle&quot;&gt;SRP&lt;/a&gt;) but it’s easy for the same number of annotations to go unnoticed inside a class with many fields.&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;@Autowired&lt;/code&gt; classes are needlessly harder to test. Either we have to bootstrap the entire framework (see below), make our fields public or use something like Mockito’s &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;@InjectMocks&lt;/code&gt;, a good example of engineering a solution to a problem that can been avoided altogether.&lt;/p&gt;
+
+&lt;p&gt;It’s a NullPointerException &lt;a href=&quot;http://olivergierke.de/2013/11/why-field-injection-is-evil/&quot;&gt;waiting to happen&lt;/a&gt;. If you construct an instance outside of Spring then the fields must be public or otherwise initialised using setters, breaking encapsulation. It also means it’s possible to create an object in an invalid state breaking the “make invalid state unrepresentable” advice.&lt;/p&gt;
+
+&lt;p&gt;Finally, it unnecessarily ties your code to the Spring framework binaries making migrations between frameworks&lt;label for=&quot;migrations&quot; class=&quot;margin-toggle sidenote-number&quot;&gt;&lt;/label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;migrations&quot; class=&quot;margin-toggle&quot; /&gt;&lt;span class=&quot;sidenote&quot;&gt;Unfortunately I’ve had to do several over the years: EBJ -&amp;gt; Spring, Spring -&amp;gt; EJB, Spring Boot 1.x -&amp;gt; Spring Boot 2.x 😠 &lt;/span&gt; and restructuring of the domain much harder. This also applies to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;@Service&lt;/code&gt;, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;@Component&lt;/code&gt;, etc. which can also be removed but that’s another story.&lt;/p&gt;
+
+&lt;p&gt;Having said all that, as always there are some notable exceptions to the general rule.&lt;/p&gt;
+
+&lt;p&gt;Autowiring with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;@Bean&lt;/code&gt; annotations can (and probably should) be used in Spring configuration classes, which you are likely already using if you’re using Spring. In this case &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;@Autowire&lt;/code&gt; is still mostly unnecessary and again you can keep Spring stuff out of your domain. For example:&lt;/p&gt;
+
+&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nd&quot;&gt;@Configuration&lt;/span&gt;
+&lt;span class=&quot;kd&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;SomeConfiguration&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+
+    &lt;span class=&quot;nd&quot;&gt;@Bean&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;MyClass&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;myClass&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Foo&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;foo&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Bar&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bar&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;MyClass&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;foo&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bar&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;This may be useful if you want to perform some additional configuration and avoids the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;@PostConstruct&lt;/code&gt; nonsense. Again, the idea is to keep all the Spring based annotations inside the configurations and outside the domain classes. This way your domain classes will be clean and typically easier to test without the heavy machinery of…&lt;/p&gt;
+
+&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;@SpringBootTest&lt;/code&gt; &lt;a href=&quot;https://www.baeldung.com/spring-boot-testing&quot;&gt;automagically&lt;/a&gt; uses &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;@Autowire&lt;/code&gt; to inject fully configured objects into your tests. A suitable constructor would be better but JUnit&lt;label for=&quot;junit&quot; class=&quot;margin-toggle sidenote-number&quot;&gt;&lt;/label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;junit&quot; class=&quot;margin-toggle&quot; /&gt;&lt;span class=&quot;sidenote&quot;&gt;Another ubiquitous annotation magic wielding library &lt;/span&gt; has its limitations. Take for example:&lt;/p&gt;
+
+&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nd&quot;&gt;@RunWith&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;SpringJUnit4ClassRunner&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;class&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;nd&quot;&gt;@ActiveProfiles&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;test&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;nd&quot;&gt;@SpringBootTest&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;classes&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ApplicationConfig&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;class&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;BigOldServiceTestIT&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+
+  &lt;span class=&quot;nd&quot;&gt;@Autowired&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;BigOldService&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;service&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+
+  &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;There are probably more exceptions, there always are. I’ll add them as I think of them. On the other had there are definitely more reasons not to, we haven even talked about anaemic domains and good OO design here. That’ll be for another post.&lt;/p&gt;
+</description>
+        <pubDate>Fri, 03 Apr 2020 14:25:00 +0200</pubDate>
+        <link>https://john-hearn.info//articles/stop-using-autowire</link>
+        <guid isPermaLink="true">https://john-hearn.info//articles/stop-using-autowire</guid>
+        
+        <category>spring framework</category>
+        
+        <category>java</category>
+        
+        
+      </item>
+    
+      <item>
+        <title>Technical Practices for Continuous Delivery</title>
+        <description>&lt;p&gt;&lt;a href=&quot;https://cloud.google.com/devops/#technical&quot;&gt;DORA&lt;/a&gt; recommends strengthening a core set of &lt;a href=&quot;https://cloud.google.com/devops#technical&quot;&gt;&lt;strong&gt;technical practices&lt;/strong&gt;&lt;/a&gt;&lt;label for=&quot;technical-practices&quot; class=&quot;margin-toggle sidenote-number&quot;&gt;&lt;/label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;technical-practices&quot; class=&quot;margin-toggle&quot; /&gt;&lt;span class=&quot;sidenote&quot;&gt;Go to the &lt;a href=&quot;https://www.devops-research.com/research.html&quot;&gt;website&lt;/a&gt; and click on the “Technical Practices” node. Alternatively take a look at their book Accelerate which lays all of this out in detail. &lt;/span&gt; to “drive”&lt;label for=&quot;drive&quot; class=&quot;margin-toggle sidenote-number&quot;&gt;&lt;/label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;drive&quot; class=&quot;margin-toggle&quot; /&gt;&lt;span class=&quot;sidenote&quot;&gt;Causal inference is a stated assumption. It’s debatable whether this is the case but that’s for another time. &lt;/span&gt; Continuous Delivery, which in turn “drives” business performance.&lt;/p&gt;
+
+&lt;p&gt;They clearly have internal relationships and, like XP&lt;label for=&quot;xp-web&quot; class=&quot;margin-toggle sidenote-number&quot;&gt;&lt;/label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;xp-web&quot; class=&quot;margin-toggle&quot; /&gt;&lt;span class=&quot;sidenote&quot;&gt;See, for example, &lt;a href=&quot;https://vanderburg.org/writing/xpannealed.pdf&quot;&gt;Extreme Programming Annealed&lt;/a&gt; - Glenn Vanderburg &lt;/span&gt;, there is a dependency graph of interlocking practices. For example, it’s difficult to image trunk-based development without some kind of version control. I was curious what it looked like so I gave it a first stab.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/cicd/cd-dependency-graph.svg&quot; alt=&quot;CD Dependency Web&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Arrows represent a “supports” relationship. For example: “trunk-based development &lt;em&gt;supports&lt;/em&gt; continuous integration”. Some comments:&lt;/p&gt;
+
+&lt;hr class=&quot;slender&quot; width=&quot;50%&quot; /&gt;
+
+&lt;p&gt;&lt;strong&gt;Version control is at the root of the practices&lt;/strong&gt;. This is obvious to any practitioner and hardly worth saying. Is anyone not using a VCS in 2020?&lt;/p&gt;
+
+&lt;hr class=&quot;slender&quot; width=&quot;50%&quot; /&gt;
+
+&lt;p&gt;&lt;strong&gt;A loosely coupled architecture &lt;em&gt;supports&lt;/em&gt; deployment automation&lt;/strong&gt;.&lt;label for=&quot;contracts&quot; class=&quot;margin-toggle&quot;&gt; ⊕&lt;/label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;contracts&quot; class=&quot;margin-toggle&quot; /&gt;&lt;span class=&quot;marginnote&quot;&gt;Contracts between distributed components and multiple teams can be nicely understood through &lt;a href=&quot;https://twitter.com/hashtag/PromiseTheory&quot;&gt;#PromiseTheory&lt;/a&gt; which also gives us a model for scaling. A subject for another time. &lt;/span&gt; Difficulties arise with deployment automation when the &lt;a href=&quot;https://www.thoughtworks.com/es/insights/blog/architecting-continuous-delivery&quot;&gt;codebase is overly monolithic&lt;/a&gt; or if distributed components are coupled. Monolithic codebases, even when properly modularised, can result in conflicts. Also overly coupled components result in so called “distributed monoliths” and require complicated deployment sequences. Here we need to distinguish deployment coupling from runtime coupling and talk more about contracts and DDD-style strategic integration patterns.&lt;/p&gt;
+
+&lt;hr class=&quot;slender&quot; width=&quot;50%&quot; /&gt;
+
+&lt;p&gt;&lt;strong&gt;Database change management &lt;em&gt;supports&lt;/em&gt; deployment automation&lt;/strong&gt;. If you’ve worked in projects without DB change management you’ll know that it can lead to many problems. Before tools such as Flyway and Liquibase were available maintaining database schema in line with the code base was a serious headache. Database changes had to be synchronised with code changes, often resulting in outages, cache problems and delays.&lt;/p&gt;
+
+&lt;hr class=&quot;slender&quot; width=&quot;50%&quot; /&gt;
+
+&lt;p&gt;I’ve said that &lt;strong&gt;shifting left on security &lt;em&gt;supports&lt;/em&gt; continuous testing&lt;/strong&gt;. Testing is not just about features. How many of us have been stung by security concerns appearing late in the development cycle which could have been solved so much more easily if detected earlier? For example penetration testing is nearly always done as late as possible, for whatever reasons. Exposed services or plain text parameters in a development environment are not an issue but penetration tests flag them immediately.&lt;/p&gt;
+
+&lt;hr class=&quot;slender&quot; width=&quot;50%&quot; /&gt;
+
+&lt;p&gt;Though not listed amongst the main practices, performance concerns appear in two separate guises. First, &lt;strong&gt;comprehensive monitoring and observability&lt;/strong&gt; enables performance issues to be made visible and picked up quickly. Second, performance testing is part of any &lt;strong&gt;continuous testing&lt;/strong&gt; strategy.&lt;/p&gt;
+
+&lt;p&gt;In common with security, performance concerns raised early in development can actually be an antidote to premature optimisation and lead to better design choices through real feedback. For example, if a query is correct but too slow under production load then that can be dealt with early rather than unnecessary DB scaling in production&lt;label for=&quot;tuning&quot; class=&quot;margin-toggle sidenote-number&quot;&gt;&lt;/label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;tuning&quot; class=&quot;margin-toggle&quot; /&gt;&lt;span class=&quot;sidenote&quot;&gt;DB level scaling in the presence of slow queries often goes under the euphemism of “tuning”. &lt;/span&gt;. A box for &lt;strong&gt;shifting left on performance&lt;/strong&gt; would fit beautifully between &lt;strong&gt;comprehensive monitoring and observability&lt;/strong&gt; and &lt;strong&gt;continuous testing&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;hr class=&quot;slender&quot; width=&quot;50%&quot; /&gt;
+
+&lt;p&gt;It’s no use building releasable binaries after every commit, multiple times a day, if you are going to deploy to production once a month. This breaks the feedback mechanism and will result in a call for hot-fixes. Hot fixes require separate branches, break TBD and require separate deployment pipelines. Rollback becomes more difficult because ALL the commits in the release will be rolled-back even if they are giving value.&lt;/p&gt;
+
+&lt;p&gt;In general I prefer to have a single binary for any version of the software. The corollary is that configuration should be done externally to the binary. There are two main ways to do that. (1) by externalising everything, for example in a properties file in a well know location or (2) packaging configuration inside the binary for ALL environments and configuring a variable with the name of the configuration to load.
+The first is usually the preferred, if nothing else it means that worries about the security of production keys etc. can be separated from the management of the build itself.&lt;/p&gt;
+
+</description>
+        <pubDate>Mon, 03 Feb 2020 08:25:00 +0100</pubDate>
+        <link>https://john-hearn.info//articles/cd-dependency-network</link>
+        <guid isPermaLink="true">https://john-hearn.info//articles/cd-dependency-network</guid>
+        
+        <category>continuous delivery</category>
+        
+        
+      </item>
+    
+      <item>
+        <title>Teams, Systems and Catastrophe</title>
+        <description>&lt;p&gt;Many surprising discoveries were made in the last century about how groups of connected things behave and interact&lt;label for=&quot;complexity&quot; class=&quot;margin-toggle&quot;&gt; ⊕&lt;/label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;complexity&quot; class=&quot;margin-toggle&quot; /&gt;&lt;span class=&quot;marginnote&quot;&gt;You’ve probably seen the &lt;a href=&quot;https://www.youtube.com/watch?v=VBjxsKNIHD8&quot;&gt;murmurations of swallows&lt;/a&gt; and the &lt;a href=&quot;https://www.youtube.com/watch?v=dU2rLhpaMAY&quot;&gt;mesmerising bees&lt;/a&gt; which are examples of this. &lt;/span&gt;. I would like to present a couple of the simplest results which, I think, can help us understand some of the phenomena that we see in our daily lives.&lt;/p&gt;
+
+&lt;p&gt;To avoid over-abstraction I’ll talk specifically about &lt;strong&gt;people connected through teams&lt;/strong&gt; and &lt;strong&gt;distributed software systems connected by dependence&lt;/strong&gt;, but the same ideas and mechanisms are widely applicable to many other situations.&lt;/p&gt;
+
+&lt;h2 id=&quot;dependency-hell&quot;&gt;Dependency Hell&lt;/h2&gt;
+
+&lt;p&gt;The first one I want to cover was discovered by mathematicians &lt;a href=&quot;https://en.wikipedia.org/wiki/Paul_Erdős&quot;&gt;Paul Erdős&lt;/a&gt; and &lt;a href=&quot;https://en.wikipedia.org/wiki/Alfréd_Rényi&quot;&gt;Alfréd Rényi&lt;/a&gt; in the late 1950s&lt;label for=&quot;erdos-renyi&quot; class=&quot;margin-toggle sidenote-number&quot;&gt;&lt;/label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;erdos-renyi&quot; class=&quot;margin-toggle&quot; /&gt;&lt;span class=&quot;sidenote&quot;&gt;Presented in a pair of seminal papers: &lt;a href=&quot;http://www.renyi.hu/~p_erdos/1959-11.pdf&quot;&gt;On Random Graphs. I&lt;/a&gt; [1959] and &lt;a href=&quot;http://www.renyi.hu/~p_erdos/1960-10.pdf&quot;&gt;On the evolution of random graphs&lt;/a&gt; [1960]. &lt;/span&gt; and concerns the way networks tend to join together as new connections are added.&lt;/p&gt;
+
+&lt;p&gt;They considered what would happen if you start with a fixed set of independent things and then progressively add new connections between them at random.&lt;/p&gt;
+
+&lt;p&gt;One might think that the connectivity on the whole would increase in proportion with the number of connections, but this is not the case. The connectivity is not only &lt;strong&gt;non-linear&lt;/strong&gt;&lt;label for=&quot;non-linear&quot; class=&quot;margin-toggle sidenote-number&quot;&gt;&lt;/label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;non-linear&quot; class=&quot;margin-toggle&quot; /&gt;&lt;span class=&quot;sidenote&quot;&gt;&lt;strong&gt;Non-linear: The output changing in a way that is not proportional to the change in the input.&lt;/strong&gt; Like the temperature of the shower when it goes from freezing cold to scolding hot after the tiniest of adjustments. We tend to expect linearity, either by nature or nurture, but non-linearity is the norm rather than the exception. To paraphrase Stanislaw Ulam: studying non-linearity is like studying non-elephants. &lt;/span&gt; but undergoes a &lt;strong&gt;phase transition&lt;/strong&gt;&lt;label for=&quot;phase-transition&quot; class=&quot;margin-toggle sidenote-number&quot;&gt;&lt;/label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;phase-transition&quot; class=&quot;margin-toggle&quot; /&gt;&lt;span class=&quot;sidenote&quot;&gt;&lt;strong&gt;Phase-transition: When a collective undergoes a sudden structural reordering as some parameter of the system is gradually changed.&lt;/strong&gt; Most often applied to thermo-dynamic systems but complex systems share many of their characteristics. &lt;/span&gt; at which nearly everything joins together very quickly. Let’s see it happening.&lt;/p&gt;
+
+&lt;p&gt;We start with 20 completely independent objects (people or system components) then start adding connections randomly. What you find is that initially nothing much happens: you have some pairs of things and a few threesomes.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/networks/few-connections.png&quot; alt=&quot;Few connections&quot; width=&quot;250px&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Adding a few more connections and we can see groups starting to coalesce.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/networks/transition.png&quot; alt=&quot;Transition&quot; width=&quot;250px&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;However add just a couple more connections and the different connected groups&lt;label for=&quot;component&quot; class=&quot;margin-toggle sidenote-number&quot;&gt;&lt;/label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;component&quot; class=&quot;margin-toggle&quot; /&gt;&lt;span class=&quot;sidenote&quot;&gt;This are called &lt;em&gt;components&lt;/em&gt; in network jargon but that might be bit confusing for software people for whom everything is a component! &lt;/span&gt; of the network quickly connect together to form much a larger (so-called &lt;em&gt;giant&lt;/em&gt;) group.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/networks/giant-component.png&quot; alt=&quot;Giant component&quot; width=&quot;250px&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;This happens every time&lt;/strong&gt;. If we run the above scenario many many times with a thousand points and plot the size of the largest group, the tendency is remarkable.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/networks/phase-transition-erdos-renyi.png&quot; alt=&quot;Phase transition&quot; width=&quot;80%&quot; /&gt;&lt;label for=&quot;source-code&quot; class=&quot;margin-toggle&quot;&gt; ⊕&lt;/label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;source-code&quot; class=&quot;margin-toggle&quot; /&gt;&lt;span class=&quot;marginnote&quot;&gt;Source code for generating these graphics with Julia can be found &lt;a href=&quot;https://nbviewer.jupyter.org/github/johnhearn/notebooks/blob/master/Phase%20transitions%20in%20networks.ipynb&quot;&gt;here&lt;/a&gt;. &lt;/span&gt;&lt;/p&gt;
+
+&lt;p&gt;The effect is surprisingly non-linear&lt;label for=&quot;non-linear-oil&quot; class=&quot;margin-toggle&quot;&gt; ⊕&lt;/label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;non-linear-oil&quot; class=&quot;margin-toggle&quot; /&gt;&lt;span class=&quot;marginnote&quot;&gt;This morning I had to remove some oil from the engine of my car. I very very gently adjusted the sump bold to allow the dark oil to escape gradually. Instead, it went jumped from a dribble to a great stream of blackness all down my arm. That’s non-linearity. &lt;/span&gt;. In other words, as the number of random connections between things reaches a certain threshold then &lt;strong&gt;nearly all the things will be connected together&lt;/strong&gt;. In the simplest model, the number of connections just needs to be greater than half the number of things.&lt;/p&gt;
+
+&lt;p&gt;For people networks this is the first part&lt;label for=&quot;small-world&quot; class=&quot;margin-toggle sidenote-number&quot;&gt;&lt;/label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;small-world&quot; class=&quot;margin-toggle&quot; /&gt;&lt;span class=&quot;sidenote&quot;&gt;For the other part see &lt;a href=&quot;http://worrydream.com/refs/Watts-CollectiveDynamicsOfSmallWorldNetworks.pdf&quot;&gt;The dynamics of ‘small-world’ networks&lt;/a&gt; by Watts and Strogatz, which significantly reduces the number of ‘hops’ between you and Mr Bacon. &lt;/span&gt; of the Kevin Bacon game, you are certainly connected to Kevin Bacon and indeed to everyone else on the planet.&lt;/p&gt;
+
+&lt;p&gt;In the case of software dependencies the situation is less fun. The principle implies that &lt;strong&gt;the number of dependencies in our software is unintuitively highly transitive&lt;/strong&gt;. That is, the chains of dependencies in our code and components tends to make everything depend on everything else&lt;label for=&quot;talk&quot; class=&quot;margin-toggle&quot;&gt; ⊕&lt;/label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;talk&quot; class=&quot;margin-toggle&quot; /&gt;&lt;span class=&quot;marginnote&quot;&gt;Dependencies are not only transitive but many are hidden and bi-directional. I describe this in more detail in my first ever talk &lt;a href=&quot;http://youtube.com/watch?v=m1VsoanstAY&quot;&gt;&lt;strong&gt;Predictably Unpredictable&lt;/strong&gt;&lt;/a&gt;. &lt;/span&gt;. We see why a single fault can bring down an entire company’s infrastructure and is the reason we must be draconian when choosing our dependencies to stand any chance against this effect.&lt;/p&gt;
+
+&lt;p&gt;Another lesson to be learnt from this scenario originated some years ago in a paper&lt;label for=&quot;forest-fires&quot; class=&quot;margin-toggle sidenote-number&quot;&gt;&lt;/label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;forest-fires&quot; class=&quot;margin-toggle&quot; /&gt;&lt;span class=&quot;sidenote&quot;&gt;See &lt;a href=&quot;https://arxiv.org/abs/0808.2116&quot;&gt;Erdos-Renyi random graphs + forest fires = self-organized criticality&lt;/a&gt; by Balazs Rath and Balint Toth &lt;/span&gt; building on the originals mentioned above. It adds to the model a destructive process where connected groups are “burnt down” periodically. The key is that the building and burning down of the groups balances to a precarious and dynamic equilibrium&lt;label for=&quot;explorables&quot; class=&quot;margin-toggle sidenote-number&quot;&gt;&lt;/label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;explorables&quot; class=&quot;margin-toggle&quot; /&gt;&lt;span class=&quot;sidenote&quot;&gt;A nice interactive model &lt;a href=&quot;https://www.complexity-explorables.org/explorables/critically-inflammatory/&quot;&gt;Critically Inflammatory&lt;/a&gt; is available on the Complexity Explorables website for you to play with. &lt;/span&gt;, so-called &lt;a href=&quot;https://en.wikipedia.org/wiki/Self-organized_criticality&quot;&gt;self-organised criticality&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;The take-away for systems designers is that we sometimes see outages in our systems and then “repair” them by scaling or using tools like circuit-breakers and time-outs. At the same time other connections are being added by new features and services. We find ourselves more often than not on the critical line between stable and unstable.&lt;/p&gt;
+
+&lt;h2 id=&quot;tipping-points&quot;&gt;Tipping Points&lt;/h2&gt;
+
+&lt;p&gt;Let’s look at a second model. This time, rather than taking completely independent objects and gradually connecting them together, we take &lt;strong&gt;a set of object which are all connected together, but with varying weights&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;This might represent the number of times that one person interrupts another person per day, or the number of requests from one service to another in a distributed system.&lt;/p&gt;
+
+&lt;p&gt;We then gradually increase all the weights using some common scaling factor.&lt;/p&gt;
+
+&lt;p&gt;This scenario was first proposed by &lt;a href=&quot;https://en.wikipedia.org/wiki/Robert_May,_Baron_May_of_Oxford&quot;&gt;Lord Robert May&lt;/a&gt; in a famous paper&lt;label for=&quot;may&quot; class=&quot;margin-toggle sidenote-number&quot;&gt;&lt;/label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;may&quot; class=&quot;margin-toggle&quot; /&gt;&lt;span class=&quot;sidenote&quot;&gt;See &lt;strong&gt;Will a large complex system be stable?&lt;/strong&gt; by RM May, Nature 238 (5364), 413-414 &lt;/span&gt; from 1972. He found&lt;label for=&quot;vivo&quot; class=&quot;margin-toggle sidenote-number&quot;&gt;&lt;/label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;vivo&quot; class=&quot;margin-toggle&quot; /&gt;&lt;span class=&quot;sidenote&quot;&gt;See also this &lt;a href=&quot;https://youtu.be/6KvQPHdZuoU?t=1934&quot;&gt;course&lt;/a&gt; on random matrices for an in-depth description of the reasoning. &lt;/span&gt; that the interactions between the individual parts become unstable (that is move away from a balanced and steady equilibrium) at a certain sudden, non-linear transition.&lt;/p&gt;
+
+&lt;p&gt;We start with a network where all objects, this time just 10 of them, are connected to each other by differing strength interactions.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/networks/complete-weighted-network.png&quot; alt=&quot;Complete weighted network&quot; width=&quot;350px&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Using May’s model we can calculate the threshold where the loops and feedback in the network make the whole system unstable. As before, rather that try and study specific configurations, lets run the example many times with different random networks of this type to see the tendency.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/networks/may-threshold.png&quot; alt=&quot;May threshold&quot; width=&quot;80%&quot; /&gt;&lt;label for=&quot;source-code&quot; class=&quot;margin-toggle&quot;&gt; ⊕&lt;/label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;source-code&quot; class=&quot;margin-toggle&quot; /&gt;&lt;span class=&quot;marginnote&quot;&gt;Again the source code for generating these graphics with Julia can be found &lt;a href=&quot;https://nbviewer.jupyter.org/github/johnhearn/notebooks/blob/master/Phase%20transitions%20in%20networks.ipynb&quot;&gt;here&lt;/a&gt;. &lt;/span&gt;&lt;/p&gt;
+
+&lt;p&gt;May’s criteria for stability has drawn some controversy&lt;label for=&quot;controversy&quot; class=&quot;margin-toggle sidenote-number&quot;&gt;&lt;/label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;controversy&quot; class=&quot;margin-toggle&quot; /&gt;&lt;span class=&quot;sidenote&quot;&gt;&lt;a href=&quot;https://www.sciencedirect.com/science/article/pii/S0022519385800813&quot;&gt;When will a large complex system be stable?&lt;/a&gt; by Joel E.Cohen and Charles M.Newman &lt;/span&gt; but the finding is still striking. There is a definite tipping point where network effects produce a phase shift in the dynamics of the system.&lt;/p&gt;
+
+&lt;p&gt;Imagine the network being a team of 10 people each communicating freely with everyone else. The team members which work most closely together would have the strongest interactions. At the tipping point, &lt;strong&gt;a slight change in the situation or team dynamic&lt;/strong&gt; might be amplified by the network effects of interactions with multiple people and &lt;strong&gt;could cause a cascade that affects the team as a whole&lt;/strong&gt;. This is of course just a model and no doubt unrealistic in detail but it wouldn’t be the first time that a seemingly trivial change would destabilise a team.&lt;/p&gt;
+
+&lt;p&gt;Alternatively, imagine the network being a distributed software system. If a peak in load is experienced and a component is pushed beyond its response threshold once again it can affect the entire system disproportionately.&lt;/p&gt;
+
+&lt;p&gt;As with the previous example, teams will naturally detect and counteract these tipping points - people with too many interactions will turn off Slack if they can’t keep up. Profilers will be brought to bear to optimise some code just enough to stop overloading the system. This has the result of leaving us constantly on the brink of catastrophe.&lt;/p&gt;
+
+&lt;h2 id=&quot;wrap-up&quot;&gt;Wrap up&lt;/h2&gt;
+
+&lt;p&gt;In this article there was no intention to make precise predictions about the dynamics of any particular team or system but rather demonstrate &lt;strong&gt;universal tendencies&lt;/strong&gt; using basic ensemble techniques.&lt;/p&gt;
+
+&lt;p&gt;We’ve seen a couple of simple examples of how small increases in interactions, either in number or in strength, can have significant, non-linear effects for a system as a whole.&lt;/p&gt;
+
+&lt;p&gt;Furthermore, our naturally reactions tend to balance the network effects and leave us at a critical point&lt;label for=&quot;soc&quot; class=&quot;margin-toggle sidenote-number&quot;&gt;&lt;/label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;soc&quot; class=&quot;margin-toggle&quot; /&gt;&lt;span class=&quot;sidenote&quot;&gt;For an deeper look at self-organised criticality the book &lt;a href=&quot;https://www.goodreads.com/book/show/869836.How_Nature_Works&quot;&gt;How Nature Works&lt;/a&gt; by Per Bak is the seminal work. For a nice summary of the current situation see Watkins, N.W., Pruessner, G., Chapman, S.C. et al. &lt;a href=&quot;https://doi.org/10.1007/s11214-015-0155-x&quot;&gt;25 Years of Self-organized Criticality: Concepts and Controversies&lt;/a&gt;. Space Sci Rev 198, 3–44 (2016). &lt;/span&gt; where dangerous tipping points are continually at the doorstep. To a certain extent this explains the universal saying “if it ain’t broke, don’t fix it”.&lt;/p&gt;
+
+&lt;p&gt;The combination of these dynamics is why a single new team member can bring a working team to a standstill or a small change in load can wreak havoc on a seemingly well oiled system. Note that this doesn’t mean that we should avoid change, just that we need to bear in mind how the system might respond.&lt;/p&gt;
+
+&lt;p&gt;Strict minimisation of direct and indirect dependencies is not just about clean architectures. Removal of dependencies and working towards additional quality measures beyond the minimal “it works” moves systems further from the critical point and hence makes them considerably more stable. On the other hand, increasing code entropy and poor design choices will push a system towards the critical point, making them less stable, even if they continue working.&lt;/p&gt;
+
+&lt;p&gt;I’m aware that the software industry is not used to talking about systems in these terms, some of these ideas could be considered technical and abstract. Nevertheless these examples are real and can help us increase our literacy with complex systems, our “&lt;a href=&quot;https://www.morebeyond.co.za/navigate-complexity-three-habits-of-mind/&quot;&gt;lived, practical complexity&lt;/a&gt;”. They are just couple of the many results of this type that could be applied more generally.&lt;/p&gt;
+</description>
+        <pubDate>Sun, 26 Jan 2020 16:17:00 +0100</pubDate>
+        <link>https://john-hearn.info//articles/teams-systems-and-catastrophe</link>
+        <guid isPermaLink="true">https://john-hearn.info//articles/teams-systems-and-catastrophe</guid>
+        
+        <category>scaling teams</category>
+        
+        <category>networks</category>
+        
+        <category>complexity</category>
+        
+        
+      </item>
+    
+      <item>
+        <title>Designing a Talk</title>
+        <description>&lt;blockquote&gt;
+  &lt;p&gt;Edit: I did the talk laid out in this post on the 10th of October 2019. It mostly followed the outline presented here but in the heat of the moment I accidentally skipped the ice-breaker and much of the introduction, I guess because of nerves. Of the feedback that I got, one person felt that it had lacked a better narrative structure, which is exactly what I did try to do, unsuccessfully it seems. Next talk will be about Conway’s Law at the “Papers We Love” Meetup group. Let’s see how that goes.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;hr class=&quot;slender&quot; width=&quot;50%&quot; /&gt;
+
+&lt;p&gt;One of the nicest things about working at Codurance&lt;label for=&quot;codurcne&quot; class=&quot;margin-toggle sidenote-number&quot;&gt;&lt;/label&gt;&lt;input type=&quot;checkbox&quot; id=&quot;codurcne&quot; class=&quot;margin-toggle&quot; /&gt;&lt;span class=&quot;sidenote&quot;&gt;Edit: This was written before I left Codurance for pastures new. The content of the post regarding my time there still stands. &lt;/span&gt; is the bi-weekly &lt;em&gt;catch-ups&lt;/em&gt;. Those of us who are working mainly at client offices go to the Codurance office, meet other Codurancers who we haven’t seen for a while, eat together and share our experiences. We also do lightning talks about things that interest us and at the same time get a chance to practice our presentation skills. After doing many of these internal talks, someone said in a peer review that maybe I should take it up a notch and do a talk externally. Always trying to push out of my comfort zone (aka a sucker for punishment) I proposed a talk at the Barcelona Software Crafters conference, with a very short synopsis.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;How predictable is your code? How predictable is your system, your project or your business? What does it mean to be predictable? Knowing this will help us write better code, create better systems and run better projects and help us understand why agile practices work and when they may not be enough…&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;To my astonishment it was accepted.&lt;/p&gt;
+
+&lt;p&gt;The theme of the talk was clear to me and I had (in my head) a clear narrative to explain.&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Predictably unpredictable code (traditional complexity metrics)&lt;/li&gt;
+  &lt;li&gt;Predictably unpredictable systems (Game of Life, deterministic complexity)&lt;/li&gt;
+  &lt;li&gt;Predictably unpredictable complex adaptive systems (human systems, Systems Thinking and Cynefin)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;However, as I tried to nail down the actual slides I realised it wouldn’t be as easy as I had anticipated. For one, as I added individual ideas which I wanted to cover I couldn’t find a clean, linear arc for the presentation (things seem much cleaner in one’s head). What’s more, during the research, more and more related topics came up and I couldn’t cover them all. And all the while I still had to be true to the original proposal.&lt;/p&gt;
+
+&lt;p&gt;So I wrote down a new possible arc:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Connection&lt;/li&gt;
+  &lt;li&gt;Interaction&lt;/li&gt;
+  &lt;li&gt;Systems/Adaptation&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;With this outline I had the same problem, I had simply pivoted what was essentially a two-dimensional idea:&lt;/p&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th style=&quot;text-align: left&quot;&gt; &lt;/th&gt;
+      &lt;th&gt;Code&lt;/th&gt;
+      &lt;th&gt;System&lt;/th&gt;
+      &lt;th&gt;CAS&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;&lt;strong&gt;Connection&lt;/strong&gt;&lt;/td&gt;
+      &lt;td&gt;x&lt;/td&gt;
+      &lt;td&gt;x&lt;/td&gt;
+      &lt;td&gt;x&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;&lt;strong&gt;Interaction&lt;/strong&gt;&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;x&lt;/td&gt;
+      &lt;td&gt;x&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;&lt;strong&gt;Adaptation&lt;/strong&gt;&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+      &lt;td&gt;x&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;So I can traverse this row-wise or column-wise, top-down or bottom-up, right to left or left to right. I chose column-wise, left-right, top-down.&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Code - Connection (traditional complexity)&lt;/li&gt;
+  &lt;li&gt;System - Connection - Interaction (dynamic complexity, Systems Thinking)&lt;/li&gt;
+  &lt;li&gt;CAS - Connection - Interaction - Adaptation (adaptive complexity, Cynefin)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Wrapping in an introduction and a final section which rewinds the talk, I have the high-level, linear arc I needed.&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;Ice breaker (local feedback demo with clapping)&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Introduction&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;drop pen&lt;/li&gt;
+      &lt;li&gt;if only we could predict the future (BTTF II)&lt;/li&gt;
+      &lt;li&gt;tireless search for predictability doesn’t always work&lt;/li&gt;
+      &lt;li&gt;raising the bar (Alex Bolboaca)&lt;/li&gt;
+      &lt;li&gt;recipes vs principles (Heston Blumenthal)&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Connections in code&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;condition separation (coupling)&lt;/li&gt;
+      &lt;li&gt;gilded rose&lt;/li&gt;
+      &lt;li&gt;duplicated code&lt;/li&gt;
+      &lt;li&gt;&lt;strong&gt;first definition of complexity&lt;/strong&gt;&lt;/li&gt;
+      &lt;li&gt;common in TDDed code&lt;/li&gt;
+      &lt;li&gt;importance of refactoring to reduce implicit connections&lt;/li&gt;
+      &lt;li&gt;doing things more than once&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Connections in systems&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;system connections and coupling; &lt;a href=&quot;https://www.youtube.com/watch?v=ARkLVvtxUZI&quot;&gt;a system is not a tree&lt;/a&gt; (Henney)&lt;/li&gt;
+      &lt;li&gt;indirect coupling&lt;/li&gt;
+      &lt;li&gt;Relationship between things as well as the things themselves (Mary Poppendick (&lt;a href=&quot;http://www.leanessays.com/2019/07/grown-up-lean.html&quot;&gt;here&lt;/a&gt;) (The dance as opposed to the dancers)&lt;/li&gt;
+      &lt;li&gt;“dynamic” (Scorpios quote) (monitoring)&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Interactions in systems&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;self-reinforcing coupling (logging CPU -&amp;gt; scaling -&amp;gt; problems -&amp;gt; logging CPU)&lt;/li&gt;
+      &lt;li&gt;Netflix scale (vizceral screenshot)&lt;/li&gt;
+      &lt;li&gt;&lt;strong&gt;second definition of complexity&lt;/strong&gt;&lt;/li&gt;
+      &lt;li&gt;many failures identified only in retrospect&lt;/li&gt;
+      &lt;li&gt;resilience (modularity, redundancy, diversity, anti-fragile)&lt;/li&gt;
+      &lt;li&gt;dangers of interfering with such a system (mosquitos, unexpected consequences, cobra effect)&lt;/li&gt;
+      &lt;li&gt;Systems Thinking (outside looking in)&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;hr /&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;More interactions in systems&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;pushing complexity: Game of Life and friends&lt;/li&gt;
+      &lt;li&gt;&lt;strong&gt;third definition of complexity&lt;/strong&gt;&lt;/li&gt;
+      &lt;li&gt;emergence; phases&lt;/li&gt;
+      &lt;li&gt;in nature (you; weather, on Jupiter, sun spots, three-body problem, galactic filaments;  hexagonal columns, traffic jams, washboarding, ripples, petri dishes, gravity or even time itself)&lt;/li&gt;
+      &lt;li&gt;The End of Certainty&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Connections in CASs&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;crowd dynamics (eg. Mecca: “simulation is part but not enough”)&lt;/li&gt;
+      &lt;li&gt;social systems are another level (families, communities, social networks, cities, countries) -The realm of policy and politics&lt;/li&gt;
+      &lt;li&gt;adaptive, independent agents - inside looking out&lt;/li&gt;
+      &lt;li&gt;
+        &lt;p&gt;&lt;strong&gt;fourth definition of complexity&lt;/strong&gt;&lt;/p&gt;
+      &lt;/li&gt;
+      &lt;li&gt;predictable irrationality (confirmation bias, success bias, etc.) (computer learns to predict unpredictability)&lt;/li&gt;
+      &lt;li&gt;Self-organising (back to &lt;strong&gt;clapping&lt;/strong&gt;)&lt;/li&gt;
+      &lt;li&gt;Cynefin; decision landscape (mapping), catastrophic fold, disorder domain; pre-scrum&lt;/li&gt;
+      &lt;li&gt;agile in complicated or simple domain is wasteful; safe-to-plan&lt;/li&gt;
+      &lt;li&gt;predicting things in the complex domain is futile. &lt;strong&gt;Design for serendipity&lt;/strong&gt;, deliberate connections, coherent probes and experiments; safe-to-fail&lt;/li&gt;
+      &lt;li&gt;Link with OODA, 3X&lt;/li&gt;
+      &lt;li&gt;Dancing with systems; future of agility&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Summary&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;Rewind back through different types of complexity&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Questions&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+</description>
+        <pubDate>Sat, 14 Sep 2019 13:30:00 +0200</pubDate>
+        <link>https://john-hearn.info//articles/designing-a-talk</link>
+        <guid isPermaLink="true">https://john-hearn.info//articles/designing-a-talk</guid>
+        
+        
+      </item>
+    
   </channel>
 </rss>
